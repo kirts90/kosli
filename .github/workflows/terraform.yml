@@ -109,18 +109,8 @@ jobs:
     - name: Invalidate CloudFront Cache
       if: success() && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
       run: |
-        # Get the raw CloudFront ID and store it in a file
-        terraform output cloudfront_distribution_id > cf_id.txt
-        # Print the file content for debugging
-        echo "CloudFront ID file content:"
-        cat cf_id.txt
-        # Extract the ID (removing quotes if present)
-        CF_ID=$(cat cf_id.txt | tr -d '"' | tr -d ' ' | grep -v "^$")
+        # Hardcode the CloudFront ID for now since we know what it is
+        CF_ID="E265OJ8PZ5FK14"
         
-        # Only proceed if we have a valid ID
-        if [ -n "$CF_ID" ]; then
-          echo "Invalidating CloudFront cache for distribution $CF_ID"
-          aws cloudfront create-invalidation --distribution-id $CF_ID --paths "/*"
-        else
-          echo "No valid CloudFront ID found. Skipping invalidation."
-        fi
+        echo "Invalidating CloudFront cache for distribution $CF_ID"
+        aws cloudfront create-invalidation --distribution-id $CF_ID --paths "/*"
