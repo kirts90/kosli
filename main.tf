@@ -9,4 +9,5 @@ module "s3_website" {
   error_html_path = var.error_html_path
   route53_zone_id = var.route53_zone_id
   domain_name     = var.domain_name
+  certificate_arn = var.certificate_arn
 }
