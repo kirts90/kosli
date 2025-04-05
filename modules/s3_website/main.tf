@@ -97,7 +97,7 @@ resource "aws_cloudfront_distribution" "website_cf" {
     minimum_protocol_version       = var.certificate_arn == "" ? null : "TLSv1.2_2021"
   }
   
-  # Add alternate domain names (CNAMEs) for your custom domain
+  # Add custom domain name as alias
   aliases = [var.domain_name]
 
   price_class = "PriceClass_100"
