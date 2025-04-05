@@ -28,3 +28,9 @@ variable "route53_zone_id" {
   description = "Route53 Hosted Zone ID"
   type        = string
 }
+
+variable "certificate_arn" {
+  description = "ARN of the SSL certificate for the custom domain"
+  type        = string
+  default     = ""
+}
