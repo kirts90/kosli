@@ -1,5 +1,5 @@
-aws_region     = "eu-west-2"
-s3_bucket_name = "kosli-bucket-dev-website"
+aws_region      = "eu-west-2"
+s3_bucket_name  = "kosli-bucket-dev-website"
 index_html_path = "./html/index.html"
 error_html_path = "./html/error.html"
 domain_name     = "dev-kosli.georgioskyrtsidis.com"
