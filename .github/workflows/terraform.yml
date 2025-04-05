@@ -105,15 +105,17 @@ jobs:
         echo "Deploying to ${ENVIRONMENT} environment"
         terraform apply -var-file=${ENVIRONMENT}.tfvars -auto-approve
         
+    # Get CloudFront Distribution ID
+    - name: Get CloudFront ID
+      if: success() && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+      id: cloudfront
+      run: |
+        terraform output -json > outputs.json
+        CF_ID=$(jq -r '.cloudfront_distribution_id.value' outputs.json)
+        echo "cf_id=$CF_ID" >> $GITHUB_OUTPUT
+      
     # Invalidate CloudFront cache if HTML files were changed
     - name: Invalidate CloudFront Cache
       if: success() && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
       run: |
-        # Store the output in a variable and extract just the CloudFront ID
-        CF_OUTPUT=$(terraform output cloudfront_distribution_id)
-        # Remove quotes if present
-        DISTRIBUTION_ID=$(echo $CF_OUTPUT | tr -d '"')
-        if [ -n "$DISTRIBUTION_ID" ]; then
-          echo "Invalidating CloudFront cache for distribution $DISTRIBUTION_ID"
-          aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
-        fi
+        aws cloudfront create-invalidation --distribution-id ${{ steps.cloudfront.outputs.cf_id }} --paths "/*"
