@@ -91,11 +91,10 @@ resource "aws_cloudfront_distribution" "website_cf" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
-    # When you want to use a custom domain, you'll need to add:
-    # acm_certificate_arn = var.certificate_arn
-    # ssl_support_method = "sni-only"
-    # minimum_protocol_version = "TLSv1.2_2021"
+    cloudfront_default_certificate = var.certificate_arn == "" ? true : false
+    acm_certificate_arn            = var.certificate_arn == "" ? null : var.certificate_arn
+    ssl_support_method             = var.certificate_arn == "" ? null : "sni-only"
+    minimum_protocol_version       = var.certificate_arn == "" ? null : "TLSv1.2_2021"
   }
   
   # Add alternate domain names (CNAMEs) for your custom domain
