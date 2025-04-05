@@ -1,18 +1,34 @@
 # S3 bucket for static website hosting
 resource "aws_s3_bucket" "website_bucket" {
-  bucket = var.bucket_name
-  acl    = "public-read"
-
-  website {
-    index_document = "index.html"
-    error_document = "error.html"
-  }
-
+  bucket        = var.bucket_name
   force_destroy = true
 }
 
+# S3 bucket website configuration
+resource "aws_s3_bucket_website_configuration" "website_config" {
+  bucket = aws_s3_bucket.website_bucket.id
+
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "error.html"
+  }
+}
+
+# S3 bucket public access block
+resource "aws_s3_bucket_public_access_block" "website_access" {
+  bucket = aws_s3_bucket.website_bucket.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
 # Upload index.html
-resource "aws_s3_bucket_object" "index" {
+resource "aws_s3_object" "index" {
   bucket       = aws_s3_bucket.website_bucket.id
   key          = "index.html"
   source       = var.index_html_path
@@ -21,7 +37,7 @@ resource "aws_s3_bucket_object" "index" {
 }
 
 # Upload error.html
-resource "aws_s3_bucket_object" "error" {
+resource "aws_s3_object" "error" {
   bucket       = aws_s3_bucket.website_bucket.id
   key          = "error.html"
   source       = var.error_html_path
