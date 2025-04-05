@@ -109,7 +109,10 @@ jobs:
     - name: Invalidate CloudFront Cache
       if: success() && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
       run: |
-        DISTRIBUTION_ID=$(terraform output -raw cloudfront_distribution_id)
+        # Store the output in a variable and extract just the CloudFront ID
+        CF_OUTPUT=$(terraform output cloudfront_distribution_id)
+        # Remove quotes if present
+        DISTRIBUTION_ID=$(echo $CF_OUTPUT | tr -d '"')
         if [ -n "$DISTRIBUTION_ID" ]; then
           echo "Invalidating CloudFront cache for distribution $DISTRIBUTION_ID"
           aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
