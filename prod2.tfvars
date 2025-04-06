@@ -14,6 +14,6 @@ data_volume_size = 2
 data_volume_type = "gp2"
 
 # S3 variables (placeholder values since we're using EC2 solution)
-s3_bucket_name   = "prod2-kosli-georgioskyrtsidis-placeholder"
-index_html_path  = "/dev/null"
-error_html_path  = "/dev/null"
+s3_bucket_name  = "prod2-kosli-georgioskyrtsidis-placeholder"
+index_html_path = "/dev/null"
+error_html_path = "/dev/null"
