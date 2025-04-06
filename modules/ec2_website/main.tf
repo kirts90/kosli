@@ -74,18 +74,13 @@ resource "aws_key_pair" "website_key" {
   public_key = var.ssh_public_key
 }
 
-# Calculate a hash based on directory content, ignoring timestamps and metadata
-data "external" "html_dir_hash" {
-  program = ["bash", "-c", "echo '{\"hash\":\"'$(find ${path.root}/html -type f -print0 | sort -z | xargs -0 cat | md5sum | cut -d' ' -f1)'\"}'"]
-}
-
-# Calculate a hash of HTML content for change detection
+# Use Terraform's fileset and filemd5 functions to hash HTML files
 locals {
-  # Hash of entire html directory content only - ignoring metadata/timestamps
-  html_dir_hash = data.external.html_dir_hash.result.hash
+  # Get list of HTML files in sorted order to ensure consistent hashing
+  html_files = sort(tolist(fileset("${path.root}/html", "*.html")))
   
-  # Use the directory hash directly as the content hash
-  content_hash = local.html_dir_hash
+  # Create a deterministic hash by combining file content hashes in a fixed order
+  content_hash = md5(join("", [for f in local.html_files : filemd5("${path.root}/html/${f}")]))
 }
 
 # Single EC2 instance
@@ -102,7 +97,6 @@ resource "aws_instance" "website" {
   # Add tag with content hash to force recreation on content change
   tags = {
     Name         = "website-ec2"
-    ContentHash  = local.content_hash
   }
 
   # IAM profile for the instance
@@ -127,6 +121,7 @@ resource "aws_instance" "website" {
 
   user_data = base64encode(<<-EOF
     #!/bin/bash
+    # Version: ${local.content_hash}
     # Install Apache & SSL
     apt-get update -y
     apt-get install -y apache2 certbot python3-certbot-apache git
