@@ -15,6 +15,8 @@ on:
         options:
           - dev
           - prod
+          - dev2
+          - prod2
 
 permissions:
   contents: read
@@ -102,15 +104,42 @@ jobs:
           ENVIRONMENT="dev"  # Default to dev for main branch pushes
         fi
         
-        echo "Deploying to ${ENVIRONMENT} environment"
-        terraform apply -var-file=${ENVIRONMENT}.tfvars -auto-approve
+        if [ "$ENVIRONMENT" == "dev2" ]; then
+          echo "Deploying to DEV2 environment (EC2-based solution)"
+          terraform apply -var-file=dev2.tfvars -auto-approve
+        elif [ "$ENVIRONMENT" == "prod2" ]; then
+          echo "Deploying to PROD2 environment (EC2-based solution)"
+          terraform apply -var-file=prod2.tfvars -auto-approve
+        else
+          echo "Deploying to ${ENVIRONMENT} environment"
+          terraform apply -var-file=${ENVIRONMENT}.tfvars -auto-approve
+        fi
         
     # Invalidate CloudFront cache if HTML files were changed
     - name: Invalidate CloudFront Cache
-      if: success() && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+      if: success() && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && (github.event.inputs.environment == 'dev' || github.event.inputs.environment == 'prod' || github.event.inputs.environment == '')
       run: |
-        # Hardcode the CloudFront ID for now since we know what it is
-        CF_ID="E265OJ8PZ5FK14"
+        # Get the environment
+        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          ENVIRONMENT="${{ github.event.inputs.environment }}"
+        else
+          ENVIRONMENT="dev"  # Default to dev for main branch pushes
+        fi
         
-        echo "Invalidating CloudFront cache for distribution $CF_ID"
-        aws cloudfront create-invalidation --distribution-id $CF_ID --paths "/*"
+        # Function to invalidate cache for S3-based website
+        invalidate_s3_cache() {
+          ENV=$1
+          # Force refresh state for the environment
+          terraform apply -var-file=${ENV}.tfvars -refresh-only -auto-approve > /dev/null 2>&1
+          CF_ID=$(terraform output -raw cloudfront_distribution_id 2>/dev/null || echo "")
+          
+          if [ -n "$CF_ID" ]; then
+            echo "Invalidating CloudFront cache for ${ENV} distribution $CF_ID"
+            aws cloudfront create-invalidation --distribution-id $CF_ID --paths "/*"
+          else
+            echo "No CloudFront distribution ID found for ${ENV} environment"
+          fi
+        }
+        
+        # Invalidate cache based on environment (both option removed)
+        invalidate_s3_cache "$ENVIRONMENT"

@@ -96,7 +96,7 @@ resource "aws_cloudfront_distribution" "website_cf" {
     ssl_support_method             = var.certificate_arn == "" ? null : "sni-only"
     minimum_protocol_version       = var.certificate_arn == "" ? null : "TLSv1.2_2021"
   }
-  
+
   # Add custom domain name as alias
   aliases = [var.domain_name]
 
