@@ -12,7 +12,7 @@ data_volume_size = 1
 data_volume_type = "gp2"
 
 # S3 variables (for compatibility with Solution 1)
-s3_bucket_name  = "dev2-kosli-georgioskyrtsidis-placeholder"
+s3_bucket_name = "dev2-kosli-georgioskyrtsidis-placeholder"
 
 # HTML files for both solutions
 index_html_path = "html/index.html"
