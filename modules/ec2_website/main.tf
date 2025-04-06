@@ -195,7 +195,7 @@ resource "aws_instance" "website" {
     EOT
     
     # Run certbot to set up SSL certificate and configure redirects
-    certbot --non-interactive --apache -d ${var.domain_name} --agree-tos --redirect
+    certbot --non-interactive --apache -d ${var.domain_name} --agree-tos --email admin@${var.domain_name} --redirect
     
     # Enable required Apache modules
     a2enmod ssl rewrite headers
