@@ -11,6 +11,10 @@ module "s3_website" {
   route53_zone_id = var.route53_zone_id
   domain_name     = var.domain_name
   certificate_arn = var.certificate_arn
+  
+  # Only create this resource when we're not using the EC2 solution
+  # This effectively makes the modules mutually exclusive
+  count = var.vpc_id == "" && length(var.subnet_ids) == 0 && var.ami_id == "" ? 1 : 0
 }
 
 # EC2-based website module (Solution 2)

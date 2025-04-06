@@ -12,3 +12,8 @@ html_content     = "<html><body style='background-color: #f0f7e6;'><h1>Productio
 root_volume_size = 8
 data_volume_size = 2
 data_volume_type = "gp2"
+
+# S3 variables (placeholder values since we're using EC2 solution)
+s3_bucket_name   = "prod2-kosli-georgioskyrtsidis-placeholder"
+index_html_path  = "/dev/null"
+error_html_path  = "/dev/null"
