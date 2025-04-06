@@ -1,6 +1,6 @@
 aws_region       = "eu-west-2"
-vpc_id           = "vpc-example-dev"
-subnet_ids       = ["subnet-example1-dev", "subnet-example2-dev"]
+vpc_id           = "vpc-09ccaf9c3cb2cd4b8"
+subnet_ids       = ["subnet-05465c64b769d0221", "subnet-01b1f7e0c65dde3eb"]
 ami_id           = "ami-01dd12f800ad09a68" # Ubuntu 24.04 LTS in eu-west-2
 instance_type    = "t2.micro"
 domain_name      = "dev2-kosli.georgioskyrtsidis.com"
