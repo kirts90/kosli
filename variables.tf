@@ -74,11 +74,6 @@ variable "key_name" {
   default     = ""
 }
 
-variable "html_content" {
-  description = "HTML content for the web server"
-  type        = string
-  default     = "<html><body><h1>Hello from EC2 Website</h1><p>This website is served from a single EC2 instance.</p></body></html>"
-}
 
 variable "root_volume_size" {
   description = "Size of the root EBS volume in GB"

@@ -181,9 +181,6 @@ resource "aws_instance" "website" {
   EOF
   )
 
-  tags = {
-    Name = "website-ec2"
-  }
 }
 
 # Elastic IP for static addressing

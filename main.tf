@@ -29,7 +29,6 @@ module "ec2_website" {
   key_name         = var.key_name
   ssh_public_key   = var.ssh_public_key
   certificate_arn  = var.certificate_arn
-  html_content     = var.html_content
   root_volume_size = var.root_volume_size
   data_volume_size = var.data_volume_size
   data_volume_type = var.data_volume_type
