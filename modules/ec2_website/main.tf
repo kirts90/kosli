@@ -173,10 +173,35 @@ resource "aws_instance" "website" {
     
     # Ensure Apache is listening on standard ports
     a2enmod ssl
-    a2ensite default-ssl
+    
+    # Configure SSL with Let's Encrypt
+    # Ensure certbot is installed
+    apt-get install -y certbot python3-certbot-apache
+    
+    # Configure basic Apache virtual host
+    cat > /etc/apache2/sites-available/000-default.conf << EOT
+    <VirtualHost *:80>
+        ServerName ${var.domain_name}
+        DocumentRoot /var/www/html
+        
+        ErrorDocument 404 /error.html
+        
+        <Directory /var/www/html>
+            Options -Indexes +FollowSymLinks
+            AllowOverride All
+            Require all granted
+        </Directory>
+    </VirtualHost>
+    EOT
+    
+    # Run certbot to set up SSL certificate and configure redirects
+    certbot --non-interactive --apache -d ${var.domain_name} --agree-tos --redirect
+    
+    # Enable required Apache modules
+    a2enmod ssl rewrite headers
     
     # Start Apache
-    systemctl start apache2
+    systemctl restart apache2
     systemctl enable apache2
   EOF
   )
