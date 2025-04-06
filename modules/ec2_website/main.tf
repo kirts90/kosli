@@ -74,6 +74,20 @@ resource "aws_key_pair" "website_key" {
   public_key = var.ssh_public_key
 }
 
+# Calculate a hash based on directory content
+data "external" "html_dir_hash" {
+  program = ["bash", "-c", "echo '{\"hash\":\"'$(find ${path.root}/html -type f -exec md5sum {} \\; | sort | md5sum | cut -d' ' -f1)'\"}'"]
+}
+
+# Calculate a hash of HTML content for change detection
+locals {
+  # Hash of entire html directory - the only source of truth
+  html_dir_hash = data.external.html_dir_hash.result.hash
+  
+  # Use the directory hash directly as the content hash
+  content_hash = local.html_dir_hash
+}
+
 # Single EC2 instance
 resource "aws_instance" "website" {
   ami                    = var.ami_id
@@ -81,6 +95,15 @@ resource "aws_instance" "website" {
   subnet_id              = var.subnet_ids[0] # Use the first subnet
   vpc_security_group_ids = [aws_security_group.ec2.id]
   key_name               = var.key_name != "" ? aws_key_pair.website_key[0].key_name : null
+  
+  # This forces instance recreation when html content changes
+  user_data_replace_on_change = true
+  
+  # Add tag with content hash to force recreation on content change
+  tags = {
+    Name         = "website-ec2"
+    ContentHash  = local.content_hash
+  }
 
   # IAM profile for the instance
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
@@ -106,30 +129,47 @@ resource "aws_instance" "website" {
     #!/bin/bash
     # Install Apache & SSL
     apt-get update -y
-    apt-get install -y apache2 certbot python3-certbot-apache
-    
+    apt-get install -y apache2 certbot python3-certbot-apache git
+
     # Format and mount the data volume
     mkfs -t ext4 /dev/nvme1n1
     mkdir -p /data
     echo "/dev/nvme1n1 /data ext4 defaults 0 2" >> /etc/fstab
     mount -a
     mkdir -p /data/website
-    
+
     # Create symlink to Apache document root
     rm -rf /var/www/html
     ln -s /data/website /var/www/html
     mkdir -p /data/website
     
-    # Configure Apache with the website content
-    cat > /data/website/index.html << 'INNEREOF'
-    ${var.html_content}
-    INNEREOF
+    # Clone the repository to get HTML files
+    cd /tmp
+    git clone https://github.com/georgioskyrtsidis/kosli.git
+    
+    # Copy ALL files from the html directory - no fallback
+    if [ -d /tmp/kosli/html ]; then
+      cp -r /tmp/kosli/html/* /data/website/
+      echo "HTML files successfully copied from repository"
+    else
+      echo "ERROR: HTML directory not found in repository"
+      exit 1
+    fi
+    
+    # Clean up
+    rm -rf /tmp/kosli
     
     # Set correct permissions
     chown -R www-data:www-data /data/website
     
     # Update Apache config for hostname
     echo "ServerName ${var.domain_name}" >> /etc/apache2/apache2.conf
+    
+    # Configure Apache to use error.html for 404 errors
+    cat > /etc/apache2/conf-available/custom-errors.conf << 'EOT'
+    ErrorDocument 404 /error.html
+    EOT
+    a2enconf custom-errors
     
     # Ensure Apache is listening on standard ports
     a2enmod ssl

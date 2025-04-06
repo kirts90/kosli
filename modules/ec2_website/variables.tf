@@ -43,11 +43,6 @@ variable "ssh_public_key" {
   default     = ""
 }
 
-variable "html_content" {
-  description = "HTML content for the web server"
-  type        = string
-  default     = "<html><body><h1>Hello from EC2 Website</h1><p>This website is served from a single EC2 instance.</p></body></html>"
-}
 
 # Removed health_check_path variable since we removed the ALB
 
