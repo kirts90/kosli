@@ -145,7 +145,7 @@ resource "aws_instance" "website" {
     
     # Clone the repository to get HTML files
     cd /tmp
-    git clone https://github.com/georgioskyrtsidis/kosli.git
+    git clone https://github.com/kirts90/kosli.git
     
     # Copy ALL files from the html directory - no fallback
     if [ -d /tmp/kosli/html ]; then
