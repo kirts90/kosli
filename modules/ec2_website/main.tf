@@ -67,13 +67,20 @@ resource "aws_iam_instance_profile" "ec2_profile" {
   role = aws_iam_role.ec2_role.name
 }
 
+# Create a key pair for SSH access if key_name and ssh_public_key are specified
+resource "aws_key_pair" "website_key" {
+  count      = var.key_name != "" && var.ssh_public_key != "" ? 1 : 0
+  key_name   = var.key_name
+  public_key = var.ssh_public_key
+}
+
 # Single EC2 instance
 resource "aws_instance" "website" {
   ami                    = var.ami_id
   instance_type          = var.instance_type
   subnet_id              = var.subnet_ids[0] # Use the first subnet
   vpc_security_group_ids = [aws_security_group.ec2.id]
-  key_name               = var.key_name != "" ? var.key_name : null
+  key_name               = var.key_name != "" ? aws_key_pair.website_key[0].key_name : null
 
   # IAM profile for the instance
   iam_instance_profile = aws_iam_instance_profile.ec2_profile.name

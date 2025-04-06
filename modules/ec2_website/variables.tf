@@ -37,6 +37,12 @@ variable "key_name" {
   default     = ""
 }
 
+variable "ssh_public_key" {
+  description = "The SSH public key to use for EC2 instances"
+  type        = string
+  default     = ""
+}
+
 variable "html_content" {
   description = "HTML content for the web server"
   type        = string

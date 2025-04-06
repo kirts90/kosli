@@ -27,6 +27,7 @@ module "ec2_website" {
   domain_name      = var.domain_name
   route53_zone_id  = var.route53_zone_id
   key_name         = var.key_name
+  ssh_public_key   = var.ssh_public_key
   certificate_arn  = var.certificate_arn
   html_content     = var.html_content
   root_volume_size = var.root_volume_size

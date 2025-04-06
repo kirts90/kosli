@@ -42,6 +42,12 @@ variable "vpc_id" {
   default     = ""
 }
 
+variable "ssh_public_key" {
+  description = "The SSH public key to use for EC2 instances (provided via environment variable)"
+  type        = string
+  default     = ""
+}
+
 variable "subnet_ids" {
   description = "List of subnet IDs for the EC2 instance"
   type        = list(string)
