@@ -131,11 +131,14 @@ jobs:
           ENV=$1
           # Force refresh state for the environment
           terraform apply -var-file=${ENV}.tfvars -refresh-only -auto-approve > /dev/null 2>&1
+          
+          # Get the distribution ID using terraform output and store it in a variable
           CF_ID=$(terraform output -raw cloudfront_distribution_id 2>/dev/null || echo "")
           
           if [ -n "$CF_ID" ]; then
             echo "Invalidating CloudFront cache for ${ENV} distribution $CF_ID"
-            aws cloudfront create-invalidation --distribution-id $CF_ID --paths "/*"
+            # Call AWS CLI with the properly extracted distribution ID
+            aws cloudfront create-invalidation --distribution-id "$CF_ID" --paths "/*"
           else
             echo "No CloudFront distribution ID found for ${ENV} environment"
           fi
